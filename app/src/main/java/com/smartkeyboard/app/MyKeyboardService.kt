@@ -14,6 +14,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.GridLayout
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.work.Constraints
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
@@ -47,10 +48,51 @@ class MyKeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionLis
         }
     }
 
-    private val emojiList = listOf(
-        "😀","😂","😍","🙂","😉","😅","😎","😭","🙏","😡",
-        "👍","👎","👏","🙌","💪","🤝","✌️","🤞","👋","✋",
-        "❤️","🔥","🎉","⭐","✅","💰","📦","🛵","📞","💬"
+    private val emojiCategories = linkedMapOf(
+        "Smileys" to listOf(
+            "😀","😃","😄","😁","😆","😅","😂","🤣","😊","😇","🙂","🙃","😉","😌","😍","🥰",
+            "😘","😙","😚","😋","😛","😝","😜","🤪","🤨","🧐","🤓","😎","🥳","😏","😒","😞",
+            "😔","😟","😕","🙁","☹️","😣","😖","😫","😩","🥺","😢","😭","😤","😠","😡","🤯",
+            "😳","🥵","🥶","😱","😨","😰","😥","😓","🤗","🤔","🤭","🤫","🤥","😶","😐","😑",
+            "🙄","😯","😦","😧","😮","😲","🥱","😴","🤤","😪","😵","🤐","🥴","🤢","🤮","🤧","😷","🤒","🤕"
+        ),
+        "Gestures" to listOf(
+            "👍","👎","👌","🤌","✌️","🤞","🤟","🤘","👈","👉","👆","👇","☝️","👋","🤚","🖐️",
+            "✋","🖖","👏","🙌","🤝","🙏","✊","👊","🤛","🤜","💪","👐","🤲","🤙","💅","🖕","✍️","👀"
+        ),
+        "Hearts" to listOf(
+            "❤️","🧡","💛","💚","💙","💜","🖤","🤍","🤎","💔","❣️","💕","💞","💓","💗","💖",
+            "💘","💝","💟","♥️","💯","💢","💥","💫","💦","💨"
+        ),
+        "Animals" to listOf(
+            "🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐵","🙈",
+            "🙉","🙊","🐔","🐧","🐦","🐤","🦆","🦅","🦉","🐺","🐗","🐴","🦄","🐝","🐛","🦋",
+            "🐌","🐞","🐢","🐍","🦎","🐙","🐠","🐬","🐳","🐊","🐆","🦓","🦍","🐘","🦒","🐪"
+        ),
+        "Food" to listOf(
+            "🍎","🍌","🍇","🍓","🍒","🍑","🥭","🍍","🥝","🍅","🥑","🍆","🥔","🥕","🌽","🌶️",
+            "🥒","🥬","🍞","🥐","🧀","🍗","🍔","🍟","🍕","🌭","🥪","🌮","🌯","🍜","🍲","🍛",
+            "🍣","🍱","🍤","🍚","🍦","🍩","🍪","🎂","🍰","🍫","🍬","🍭","☕","🍵","🥤","🧋","🍺","🍷"
+        ),
+        "Activities" to listOf(
+            "⚽","🏀","🏈","⚾","🎾","🏐","🏉","🎱","🏓","🏸","🥊","🥋","🎯","🎮","🎲","🧩",
+            "🎨","🎬","🎤","🎧","🎸","🥁","🎹","🏆","🥇","🎳","🏋️","🚴","🏃","🏊","🎣","🎪","🎭"
+        ),
+        "Travel" to listOf(
+            "🚗","🚕","🚙","🚌","🚎","🏎️","🚓","🚑","🚒","🚐","🛻","🚚","🚛","✈️","🛫","🛬",
+            "🚀","🚁","⛵","🚤","🛳️","⛴️","🚂","🚆","🚇","🚊","🚲","🛵","🏍️","🛺","⛽","🚦",
+            "🗺️","🏝️","🏔️","🗽","🏢","🏠","🏦","🏪","🏭","🕌","🕋"
+        ),
+        "Business" to listOf(
+            "💼","📱","💻","⌨️","🖥️","🖨️","📷","📞","☎️","📠","🔋","🔌","💡","🔦","📔","📒",
+            "📝","📁","📊","📈","📉","🗂️","📋","📌","📎","✂️","🔑","🔒","🔓","🔨","🛠️","⚙️",
+            "🧾","💵","💴","💶","💷","💰","💳","💎","⚖️","🧰","📦","📮","✉️","📧","📤","📥","🗓️","⏰","⌚","⏳"
+        ),
+        "Symbols" to listOf(
+            "✅","❌","❎","➕","➖","➗","✔️","☑️","➡️","⬅️","⬆️","⬇️","🔁","🔂","🔄","🔃",
+            "⭐","🌟","✨","🔥","‼️","⁉️","❓","❔","❗","❕","💤","🆗","🆕","🆓","🔝","🔴",
+            "🟠","🟡","🟢","🔵","🟣","⚫","⚪","🟤","🔺","🔻","♻️","🔔","🔕"
+        )
     )
 
     override fun onCreateInputView(): View {
@@ -64,31 +106,50 @@ class MyKeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionLis
         lettersView.setOnKeyboardActionListener(this)
         symbolsView.keyboard = symbolsKeyboard
         symbolsView.setOnKeyboardActionListener(this)
-        buildEmojiGrid()
+        buildEmojiCategories()
         container.findViewById<Button>(R.id.emoji_back_btn).setOnClickListener { showLetters() }
         return container
     }
 
-    private fun buildEmojiGrid() {
-        val grid = container.findViewById<GridLayout>(R.id.emoji_grid)
-        grid.removeAllViews()
-        for (emoji in emojiList) {
-            val btn = Button(this)
-            btn.text = emoji
-            btn.textSize = 20f
-            btn.setBackgroundColor(0x00000000)
-            btn.setTextColor(0xFFFFFFFF.toInt())
-            val params = GridLayout.LayoutParams()
-            params.width = 0
-            params.height = ViewGroup.LayoutParams.WRAP_CONTENT
-            params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-            btn.layoutParams = params
-            btn.setOnClickListener {
-                currentInputConnection?.commitText(emoji, 1)
-                currentText.append(emoji)
-                scheduleSave()
+    private fun buildEmojiCategories() {
+        val categoriesContainer = container.findViewById<LinearLayout>(R.id.emoji_categories_container)
+        categoriesContainer.removeAllViews()
+        val density = resources.displayMetrics.density
+
+        for ((categoryName, emojis) in emojiCategories) {
+            val header = TextView(this)
+            header.text = categoryName
+            header.textSize = 12f
+            header.setTextColor(0xFF6B7280.toInt())
+            header.setPadding((8 * density).toInt(), (10 * density).toInt(), 0, (4 * density).toInt())
+            categoriesContainer.addView(header)
+
+            val grid = GridLayout(this)
+            grid.columnCount = 8
+            grid.layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+
+            for (emoji in emojis) {
+                val btn = Button(this)
+                btn.text = emoji
+                btn.textSize = 19f
+                btn.setBackgroundColor(0x00000000)
+                btn.setTextColor(0xFF1C1C1E.toInt())
+                val params = GridLayout.LayoutParams()
+                params.width = 0
+                params.height = (40 * density).toInt()
+                params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                btn.layoutParams = params
+                btn.setOnClickListener {
+                    currentInputConnection?.commitText(emoji, 1)
+                    currentText.append(emoji)
+                    scheduleSave()
+                }
+                grid.addView(btn)
             }
-            grid.addView(btn)
+            categoriesContainer.addView(grid)
         }
     }
 
