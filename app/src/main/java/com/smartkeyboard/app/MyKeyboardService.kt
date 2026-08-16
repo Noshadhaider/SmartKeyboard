@@ -36,7 +36,7 @@ class MyKeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionLis
     // 2 sec debounce - typing ruke to save
     private val saveHandler = Handler(Looper.getMainLooper())
     private val saveRunnable = Runnable { saveNow() }
-    private val DEBOUNCE_MS = 2000L
+    private val DEBOUNCE_MS = 5000L
 
     // 10 sec force save - fast typing mein bhi save hoga
     private val FORCE_SAVE_MS = 10000L
