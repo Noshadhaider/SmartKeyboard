@@ -3,28 +3,22 @@
     android:id="@+id/keyboard_container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#F4F5F7">
+    android:background="#ECEDF0"
+    android:paddingLeft="3dp"
+    android:paddingRight="3dp"
+    android:paddingTop="6dp"
+    android:paddingBottom="4dp">
 
-    <android.inputmethodservice.KeyboardView
+    <com.smartkeyboard.app.CustomKeyboardView
         android:id="@+id/keyboard_view_letters"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:keyBackground="@drawable/key_background"
-        android:keyTextColor="#1C1C1E"
-        android:keyTextSize="19sp"
-        android:shadowColor="#00000000"
-        android:shadowRadius="0" />
+        android:layout_height="wrap_content" />
 
-    <android.inputmethodservice.KeyboardView
+    <com.smartkeyboard.app.CustomKeyboardView
         android:id="@+id/keyboard_view_symbols"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:keyBackground="@drawable/key_background"
-        android:keyTextColor="#1C1C1E"
-        android:keyTextSize="17sp"
-        android:shadowColor="#00000000"
-        android:shadowRadius="0" />
+        android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/emoji_panel"
