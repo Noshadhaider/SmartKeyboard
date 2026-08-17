@@ -17,29 +17,32 @@ class CustomKeyboardView @JvmOverloads constructor(
 ) : KeyboardView(context, attrs, defStyle) {
 
     private val density = context.resources.displayMetrics.density
-    private val cornerRadius = 6f * density
-    private val keyGap = 2f * density
+    private val cornerRadius = 8f * density
+    private val keyGap = 3f * density
 
+    // Floris-style flat palette — no per-key shadow bitmap/layer, just flat rounded rects (cheap to draw)
     private val normalBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.parseColor("#FFFFFF")
     }
     private val functionBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#E3E5E8")
+        color = Color.parseColor("#E4E7ED")
     }
     private val pressedNormalPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#DADDE1")
+        color = Color.parseColor("#D7DBE2")
     }
     private val pressedFunctionPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#C7C9CD")
+        color = Color.parseColor("#C4C9D1")
     }
     private val shiftActivePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#AEB1B6")
-    }
-    private val shadowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#1A000000")
+        color = Color.parseColor("#4C6EF5")
     }
     private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.parseColor("#1C1C1E")
+        textAlign = Paint.Align.CENTER
+        typeface = Typeface.DEFAULT
+    }
+    private val shiftLabelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#FFFFFF")
         textAlign = Paint.Align.CENTER
         typeface = Typeface.DEFAULT
     }
@@ -71,30 +74,26 @@ class CustomKeyboardView @JvmOverloads constructor(
 
             val isFunction = isFunctionKey(key)
             val isShiftKey = key.codes.isNotEmpty() && key.codes[0] == -1
-            val isSpace = key.codes.isNotEmpty() && key.codes[0] == 32
+            val isShiftOn = isShiftKey && kb.isShifted
 
-            if (!isSpace) {
-                rect.set(left, top + 1.2f * density, right, bottom + 1.2f * density)
-                canvas.drawRoundRect(rect, cornerRadius, cornerRadius, shadowPaint)
-            }
-
+            // Single flat rounded-rect per key — no shadow layer, keeps drawing cheap/fast
             rect.set(left, top, right, bottom)
             val bgPaint = when {
-                isShiftKey && kb.isShifted -> shiftActivePaint
-                isSpace -> if (key.pressed) pressedNormalPaint else normalBgPaint
+                isShiftOn -> shiftActivePaint
                 isFunction -> if (key.pressed) pressedFunctionPaint else functionBgPaint
                 else -> if (key.pressed) pressedNormalPaint else normalBgPaint
             }
             canvas.drawRoundRect(rect, cornerRadius, cornerRadius, bgPaint)
 
             key.label?.let { label ->
-                labelPaint.textSize = (if (isFunction) 15f else 17f) * density
+                val paint = if (isShiftOn) shiftLabelPaint else labelPaint
+                paint.textSize = (if (isFunction) 15f else 17f) * density
                 var text = label.toString()
                 if (kb.isShifted && text.length == 1 && text[0].isLetter()) {
                     text = text.uppercase()
                 }
-                val textY = rect.centerY() - (labelPaint.descent() + labelPaint.ascent()) / 2f
-                canvas.drawText(text, rect.centerX(), textY, labelPaint)
+                val textY = rect.centerY() - (paint.descent() + paint.ascent()) / 2f
+                canvas.drawText(text, rect.centerX(), textY, paint)
             }
 
             val hint = key.popupCharacters
