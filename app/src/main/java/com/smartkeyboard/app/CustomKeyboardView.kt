@@ -21,7 +21,7 @@ import android.util.AttributeSet
 class CustomKeyboardView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet?,
-    defStyle: Int = android.R.attr.keyboardViewStyle
+    defStyle: Int = 0
 ) : KeyboardView(context, attrs, defStyle) {
 
     private val density = context.resources.displayMetrics.density
