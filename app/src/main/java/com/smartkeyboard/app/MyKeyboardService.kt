@@ -14,6 +14,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.GridLayout
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import androidx.work.Constraints
 import androidx.work.NetworkType
@@ -26,6 +27,11 @@ class MyKeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionLis
     private lateinit var lettersView: KeyboardView
     private lateinit var symbolsView: KeyboardView
     private lateinit var emojiPanel: LinearLayout
+    private lateinit var emojiScroll: ScrollView
+    private val categoryIcons = linkedMapOf(
+        "Smileys" to "😀", "Gestures" to "👍", "Hearts" to "❤️", "Animals" to "🐶",
+        "Food" to "🍔", "Activities" to "⚽", "Travel" to "🚗", "Business" to "💼", "Symbols" to "✅"
+    )
     private lateinit var lettersKeyboard: Keyboard
     private lateinit var symbolsKeyboard: Keyboard
     private lateinit var suggestionBar: LinearLayout
@@ -121,6 +127,7 @@ class MyKeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionLis
         lettersView  = container.findViewById(R.id.keyboard_view_letters)
         symbolsView  = container.findViewById(R.id.keyboard_view_symbols)
         emojiPanel   = container.findViewById(R.id.emoji_panel)
+        emojiScroll  = container.findViewById(R.id.emoji_scroll)
         suggestionBar = container.findViewById(R.id.suggestion_bar)
         suggestionViews = listOf(
             container.findViewById(R.id.suggestion_1),
@@ -169,19 +176,25 @@ class MyKeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionLis
 
     private fun buildEmojiCategories() {
         val categoriesContainer = container.findViewById<LinearLayout>(R.id.emoji_categories_container)
+        val tabsContainer = container.findViewById<LinearLayout>(R.id.emoji_tabs_container)
         categoriesContainer.removeAllViews()
+        tabsContainer.removeAllViews()
         val density = resources.displayMetrics.density
+        val sectionHeaders = mutableMapOf<String, TextView>()
 
         for ((categoryName, emojis) in emojiCategories) {
+            // Section header
             val header = TextView(this)
             header.text = categoryName
             header.textSize = 12f
             header.setTextColor(0xFF6B7280.toInt())
-            header.setPadding((8 * density).toInt(), (10 * density).toInt(), 0, (4 * density).toInt())
+            header.setPadding((6 * density).toInt(), (10 * density).toInt(), 0, (6 * density).toInt())
             categoriesContainer.addView(header)
+            sectionHeaders[categoryName] = header
 
+            // Emoji grid — flat, no per-cell background draw, so it stays cheap/fast
             val grid = GridLayout(this)
-            grid.columnCount = 8
+            grid.columnCount = 7
             grid.layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -190,12 +203,13 @@ class MyKeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionLis
             for (emoji in emojis) {
                 val btn = Button(this)
                 btn.text = emoji
-                btn.textSize = 19f
+                btn.textSize = 20f
                 btn.setBackgroundColor(0x00000000)
                 btn.setTextColor(0xFF1C1C1E.toInt())
+                btn.isAllCaps = false
                 val params = GridLayout.LayoutParams()
                 params.width = 0
-                params.height = (40 * density).toInt()
+                params.height = (42 * density).toInt()
                 params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
                 btn.layoutParams = params
                 btn.setOnClickListener {
@@ -206,6 +220,18 @@ class MyKeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionLis
                 grid.addView(btn)
             }
             categoriesContainer.addView(grid)
+
+            // Top tab icon for this category — tap to jump straight to it
+            val tab = TextView(this)
+            tab.text = categoryIcons[categoryName] ?: "•"
+            tab.textSize = 18f
+            tab.gravity = android.view.Gravity.CENTER
+            tab.setBackgroundResource(android.R.color.transparent)
+            tab.layoutParams = LinearLayout.LayoutParams((44 * density).toInt(), ViewGroup.LayoutParams.MATCH_PARENT)
+            tab.setOnClickListener {
+                header.post { emojiScroll.smoothScrollTo(0, header.top) }
+            }
+            tabsContainer.addView(tab)
         }
     }
 
