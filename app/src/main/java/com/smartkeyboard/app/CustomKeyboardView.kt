@@ -10,14 +10,6 @@ import android.inputmethodservice.Keyboard
 import android.inputmethodservice.KeyboardView
 import android.util.AttributeSet
 
-/**
- * Gboard-style renderer for the classic android.inputmethodservice.KeyboardView.
- * Stock KeyboardView can't color individual keys differently, so we take over
- * onDraw() completely: white rounded keys for letters/numbers, light-gray rounded
- * keys for function keys (shift, backspace, ?123, emoji, enter), a soft drop
- * shadow under every key, and a small superscript number hint (from
- * popupCharacters) on the top row.
- */
 class CustomKeyboardView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet?,
@@ -39,6 +31,9 @@ class CustomKeyboardView @JvmOverloads constructor(
     }
     private val pressedFunctionPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.parseColor("#C7C9CD")
+    }
+    private val shiftActivePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#AEB1B6")
     }
     private val shadowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.parseColor("#1A000000")
@@ -75,18 +70,17 @@ class CustomKeyboardView @JvmOverloads constructor(
             val bottom = padTop + key.y + key.height - keyGap / 2f
 
             val isFunction = isFunctionKey(key)
-
-            // Space bar spans wide and looks best flat/blended rather than boxed
+            val isShiftKey = key.codes.isNotEmpty() && key.codes[0] == -1
             val isSpace = key.codes.isNotEmpty() && key.codes[0] == 32
 
             if (!isSpace) {
-                // soft drop shadow
                 rect.set(left, top + 1.2f * density, right, bottom + 1.2f * density)
                 canvas.drawRoundRect(rect, cornerRadius, cornerRadius, shadowPaint)
             }
 
             rect.set(left, top, right, bottom)
             val bgPaint = when {
+                isShiftKey && kb.isShifted -> shiftActivePaint
                 isSpace -> if (key.pressed) pressedNormalPaint else normalBgPaint
                 isFunction -> if (key.pressed) pressedFunctionPaint else functionBgPaint
                 else -> if (key.pressed) pressedNormalPaint else normalBgPaint
@@ -94,12 +88,15 @@ class CustomKeyboardView @JvmOverloads constructor(
             canvas.drawRoundRect(rect, cornerRadius, cornerRadius, bgPaint)
 
             key.label?.let { label ->
-                labelPaint.textSize = (if (isFunction) 17f else 19f) * density
+                labelPaint.textSize = (if (isFunction) 15f else 17f) * density
+                var text = label.toString()
+                if (kb.isShifted && text.length == 1 && text[0].isLetter()) {
+                    text = text.uppercase()
+                }
                 val textY = rect.centerY() - (labelPaint.descent() + labelPaint.ascent()) / 2f
-                canvas.drawText(label.toString(), rect.centerX(), textY, labelPaint)
+                canvas.drawText(text, rect.centerX(), textY, labelPaint)
             }
 
-            // superscript number hint on letter keys (from popupCharacters)
             val hint = key.popupCharacters
             val lbl = key.label
             if (!hint.isNullOrEmpty() && hint.length == 1 && lbl != null && lbl.length == 1 && lbl[0].isLetter()) {
