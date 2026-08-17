@@ -12,13 +12,15 @@
     <com.smartkeyboard.app.CustomKeyboardView
         android:id="@+id/keyboard_view_letters"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:keyBackground="@drawable/key_background" />
 
     <com.smartkeyboard.app.CustomKeyboardView
         android:id="@+id/keyboard_view_symbols"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:keyBackground="@drawable/key_background" />
 
     <LinearLayout
         android:id="@+id/emoji_panel"
